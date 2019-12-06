@@ -17,12 +17,12 @@ inline int read(){
 	return x*f;
 }
 int a[MAXN],Size,pos[MAXN],n;
-namespace alb{
+struct FK1{
 	ull sum[MAXN],tag[MAXN];
-	void Update(int i,int delta){
+	void Update(int i,int v){
 		int id=pos[i],rb=min(id*Size,n);
-		for (int j=i;j<=rb;++j) sum[j]+=delta;
-		for (int j=id+1;j<=pos[n];++j) tag[j]+=delta;
+		for (int j=i;j<=rb;++j) sum[j]+=v;
+		for (int j=id+1;j<=pos[n];++j) tag[j]+=v;
 	}
 	ull GetVal(int i){
 		return sum[i]+tag[pos[i]];
@@ -30,25 +30,47 @@ namespace alb{
 	ull Sum(int l,int r){
 		return GetVal(r)-GetVal(l-1);
 	}
-}
-using namespace alb;
+}Kaffu;
+struct FK2{
+	int sum[MAXN],tag[MAXN];
+	void BF(int l,int r,int v){
+		for (int j=l;j<=r;++j) sum[j]+=v;
+	}
+	void Update(int l,int r,int v){
+		int lid=pos[l],rid=pos[r];
+		if (lid==rid) return BF(l,r,v),void();
+		int rb=min(lid*Size,n),lb=(rid-1)*Size+1;
+		BF(l,rb,v),BF(lb,r,v);
+		for (int i=lid+1;i<=rid-1;++i) tag[i]+=v;
+	}
+	int GetVal(int i){
+		return sum[i]+tag[pos[i]];
+	}
+}Chino[MAXM];
 int cnt[MAXM][MAXN];
 ull val[MAXM];
 int L[MAXN],R[MAXN];
 void Init(){
 	for (int i=1;i<=pos[n];++i){
 		int lb=(i-1)*Size+1,rb=min(i*Size,n);
-		for (int j=lb;j<=rb;++j) cnt[i][L[j]]++,cnt[i][R[j]+1]--;
-		for (int j=1;j<=n;++j) cnt[i][j]+=cnt[i][j-1];
+		for (int j=lb;j<=rb;++j) Chino[i].Update(L[i],R[i],1);
 	}
 }
-void Rebuild(int index,int delta){
-	for (int i=1;i<=pos[n];++i) val[i]+=1ull*delta*cnt[i][index];
-	Update(index,delta);
+void Rebuild(int index,int v){
+	for (int i=1;i<=pos[n];++i) val[i]+=1ull*v*Chino[i].GetVal(index);
+	Kaffu.Update(index,v);
+}
+void UpdateInterval(int index,int l,int r){
+	int id=pos[index];
+	val[id]-=Kaffu.Sum(L[index],R[index]);
+	val[id]+=Kaffu.Sum(l,r);
+	Chino[id].Update(L[index],R[index],-1);
+	Chino[id].Update(l,r,1);
+	L[index]=l,R[index]=r;
 }
 ull BF(int l,int r){
 	ull ans=0;
-	for (int i=l;i<=r;++i) ans+=Sum(L[i],R[i]);
+	for (int i=l;i<=r;++i) ans+=Kaffu.Sum(L[i],R[i]);
 	return ans;
 }
 ull Query(int l,int r){
@@ -73,13 +95,17 @@ int main(){
 	while (q--){
 		int opr=read();
 		if (opr==1){
-			int x=read(),y=read();
-			Rebuild(x,y-a[x]);
-			a[x]=y;
+			int p=read(),x=read();
+			Rebuild(p,x-a[p]);
+			a[p]=x;
 		}
-		else {
+		else if (opr==2){
 			int l=read(),r=read();
 			printf("%llu\n",Query(l,r));
+		}
+		else {
+			int p=read(),l=read(),r=read();
+			UpdateInterval(p,l,r);
 		}
 	}
 }

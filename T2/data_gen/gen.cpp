@@ -23,8 +23,8 @@ int Rand(int l,int r){
 }
 int main(){
 	srand(time(NULL));
-	freopen("data.in","w",stdout);
-	int n=10;
+	freopen("FNCS10.in","w",stdout);
+	int n=200000;
 	printf("%d\n",n);
 	for (int i=1;i<=n;++i){
 		printf("%d\n",Rand(1,1e9));
@@ -34,10 +34,10 @@ int main(){
 		if (l>r) swap(l,r);
 		printf("%d %d\n",l,r);
 	}
-	int q=20;
+	int q=200000;
 	printf("%d\n",q);
 	for (int i=1;i<=q;++i){
-		int opr=Rand(1,2);
+		int opr=(rand()%20==0)?1:2;
 		printf("%d ",opr);
 		if (opr==1) printf("%d %d\n",Rand(1,n),Rand(1,1e9));
 		else {
